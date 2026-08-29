@@ -9,31 +9,40 @@ const ORDER: LadderLevel[] = [
   "critical",
 ];
 
-const BG: Record<LadderLevel, string> = {
-  near_zero: "bg-emerald-500/20 border-emerald-400/40",
-  low: "bg-teal-500/20 border-teal-400/40",
-  medium: "bg-amber-500/20 border-amber-400/40",
-  high: "bg-orange-500/20 border-orange-400/40",
-  critical: "bg-red-500/25 border-red-400/50",
+const ACCENT: Record<LadderLevel, string> = {
+  near_zero: "var(--pass)",
+  low: "var(--low)",
+  medium: "var(--medium)",
+  high: "var(--high)",
+  critical: "var(--critical)",
 };
 
 export function LadderStrip({ active }: { active?: LadderLevel }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-      {ORDER.map((level) => {
+    <div className="grid grid-cols-1 sm:grid-cols-5 border border-[var(--line)]">
+      {ORDER.map((level, i) => {
         const copy = LADDER_COPY[level];
         const isActive = active === level;
         return (
           <div
             key={level}
-            className={`ladder-step rounded-xl border px-3 py-3 ${BG[level]} ${
-              isActive ? "active ring-1 ring-[var(--brand)]" : "opacity-70"
-            }`}
+            className={`px-3 py-3 ${
+              i > 0 ? "sm:border-l border-t sm:border-t-0 border-[var(--line)]" : ""
+            } ${isActive ? "bg-[var(--bg-muted)]" : "bg-[var(--bg)]"}`}
+            style={{
+              boxShadow: isActive
+                ? `inset 0 3px 0 0 ${ACCENT[level]}`
+                : undefined,
+            }}
           >
-            <div className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
-              {copy.label}
+            <div className="label-caps">{copy.label}</div>
+            <div
+              className={`text-sm mt-1 ${
+                isActive ? "font-semibold text-[var(--text)]" : "text-[var(--muted)]"
+              }`}
+            >
+              {copy.action}
             </div>
-            <div className="text-sm font-semibold mt-1">{copy.action}</div>
           </div>
         );
       })}

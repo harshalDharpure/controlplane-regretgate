@@ -101,8 +101,8 @@ export default function OpsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="pt-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
+      <header className="border-b border-[var(--line)] pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight">
           Ops & governance
         </h1>
         <p className="text-[var(--muted)] mt-2 max-w-2xl text-sm leading-relaxed">
@@ -112,44 +112,37 @@ export default function OpsPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Metric
-          label="Actions scored"
-          value={String(metrics?.actionsScored ?? 0)}
-        />
-        <Metric
-          label="Avg regret"
-          value={String(metrics?.avgRegret ?? 0)}
-        />
-        <Metric
-          label="Hard blocks"
-          value={String(metrics?.hardBlocks ?? 0)}
-        />
+      <div className="grid grid-cols-2 md:grid-cols-4 border border-[var(--line)]">
+        <Metric label="Actions scored" value={String(metrics?.actionsScored ?? 0)} />
+        <Metric label="Avg regret" value={String(metrics?.avgRegret ?? 0)} />
+        <Metric label="Hard blocks" value={String(metrics?.hardBlocks ?? 0)} />
         <Metric label="Holds" value={String(metrics?.holds ?? 0)} />
         <Metric
           label="Thrash catches"
           value={String(metrics?.thrashDetections ?? 0)}
+          borderTop
         />
         <Metric
           label="Sim FP rate"
           value={`${Math.round((metrics?.simulatedFalsePositiveRate ?? 0) * 100)}%`}
+          borderTop
         />
         <Metric
           label="Sim FN rate"
           value={`${Math.round((metrics?.simulatedFalseNegativeRate ?? 0) * 100)}%`}
+          borderTop
         />
         <Metric
-          label="Alert fatigue proxy"
+          label="Alert fatigue"
           value={`${Math.round((metrics?.alertFatigueProxy ?? 0) * 100)}%`}
+          borderTop
         />
       </div>
 
       {feedback && (
-        <div className="panel p-4 flex flex-wrap gap-4 items-center justify-between">
+        <div className="panel p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-widest text-[var(--muted)]">
-              Feedback offsets
-            </div>
+            <div className="label-caps">Feedback offsets</div>
             <div className="mono text-sm mt-1">
               scoreBias={feedback.scoreBias} · pFailureBias=
               {feedback.pFailureBias} · updates={feedback.updates}
@@ -157,15 +150,14 @@ export default function OpsPage() {
           </div>
           <p className="text-xs text-[var(--muted)] max-w-md">
             Human decisions recalibrate thresholds — rejected/escalated raises
-            caution; approved eases it. This is how over/under-flagging is tuned
-            rather than “solved away.”
+            caution; approved eases it.
           </p>
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         <section className="panel p-4 space-y-3">
-          <h2 className="font-semibold">HITL queue</h2>
+          <h2 className="font-semibold text-sm">HITL queue</h2>
           {hitl.length === 0 && (
             <p className="text-sm text-[var(--muted)]">
               No pending holds. Run a high-regret scenario first.
@@ -174,7 +166,7 @@ export default function OpsPage() {
           {hitl.map((item) => (
             <div
               key={item.id}
-              className="border border-[var(--line)] rounded-xl p-3 space-y-2"
+              className="border border-[var(--line)] p-3 space-y-2 bg-[var(--bg-muted)]"
             >
               <div className="flex justify-between gap-2 text-sm">
                 <span className="font-medium capitalize">
@@ -190,18 +182,13 @@ export default function OpsPage() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {(
-                  [
-                    "approved",
-                    "edited",
-                    "rejected",
-                    "escalated",
-                  ] as const
+                  ["approved", "edited", "rejected", "escalated"] as const
                 ).map((s) => (
                   <button
                     key={s}
                     disabled={busy === item.id}
                     onClick={() => resolve(item.id, s)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-[var(--line)] hover:border-[var(--brand)] capitalize disabled:opacity-50"
+                    className="btn btn-secondary text-xs py-1 px-2 capitalize"
                   >
                     {s}
                   </button>
@@ -212,39 +199,39 @@ export default function OpsPage() {
         </section>
 
         <section className="panel p-4 space-y-3">
-          <h2 className="font-semibold">Audit receipts</h2>
-          <div className="max-h-[420px] overflow-auto space-y-2">
+          <h2 className="font-semibold text-sm">Audit receipts</h2>
+          <div className="max-h-[420px] overflow-auto">
             {audit.length === 0 && (
               <p className="text-sm text-[var(--muted)]">
                 Audit log empty — evaluate actions to populate.
               </p>
             )}
-            {audit.map((e) => (
-              <div
-                key={e.id}
-                className="text-xs border-b border-[var(--line)] pb-2"
-              >
-                <div className="flex justify-between gap-2">
-                  <span className="text-[var(--brand)] mono">{e.kind}</span>
-                  <span className="text-[var(--muted)] mono">
-                    {new Date(e.at).toLocaleTimeString()}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-[var(--muted)]">{e.summary}</div>
-              </div>
-            ))}
+            <table className="w-full text-xs">
+              <tbody>
+                {audit.map((e) => (
+                  <tr key={e.id} className="border-b border-[var(--line)]">
+                    <td className="py-2 pr-2 mono text-[var(--text)] whitespace-nowrap align-top">
+                      {e.kind}
+                    </td>
+                    <td className="py-2 pr-2 text-[var(--muted)] align-top">
+                      {e.summary}
+                    </td>
+                    <td className="py-2 mono text-[var(--muted)] whitespace-nowrap align-top text-right">
+                      {new Date(e.at).toLocaleTimeString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
 
       <section className="panel p-4 space-y-4">
-        <h2 className="font-semibold">Policy layer</h2>
+        <h2 className="font-semibold text-sm">Policy layer</h2>
         <div className="grid md:grid-cols-3 gap-3">
           {useCases.map((u) => (
-            <div
-              key={u.id}
-              className="border border-[var(--line)] rounded-xl p-3 space-y-2"
-            >
+            <div key={u.id} className="border border-[var(--line)] p-3 space-y-2">
               <div className="font-medium text-sm">{u.label}</div>
               <div className="text-[11px] text-[var(--muted)]">
                 latency ≤ {u.latencyBudgetMs}ms · appetite {u.riskAppetite}
@@ -256,13 +243,13 @@ export default function OpsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => tighten(u.id)}
-                  className="text-xs px-2 py-1 rounded-lg border border-[var(--line)]"
+                  className="btn btn-secondary text-xs py-1 px-2"
                 >
                   Tighten
                 </button>
                 <button
                   onClick={() => loosen(u.id)}
-                  className="text-xs px-2 py-1 rounded-lg border border-[var(--line)]"
+                  className="btn btn-secondary text-xs py-1 px-2"
                 >
                   Loosen
                 </button>
@@ -272,10 +259,7 @@ export default function OpsPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-3">
           {packs.map((p) => (
-            <div
-              key={p.id}
-              className="border border-[var(--line)] rounded-xl p-3"
-            >
+            <div key={p.id} className="border border-[var(--line)] p-3">
               <div className="font-medium text-sm">{p.label}</div>
               <div className="text-[11px] text-[var(--muted)]">{p.region}</div>
               <ul className="mt-2 text-[11px] text-[var(--muted)] list-disc pl-4 space-y-1">
@@ -291,13 +275,23 @@ export default function OpsPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  borderTop,
+}: {
+  label: string;
+  value: string;
+  borderTop?: boolean;
+}) {
   return (
-    <div className="panel p-3">
-      <div className="text-[10px] uppercase tracking-wider text-[var(--muted)]">
-        {label}
-      </div>
-      <div className="mono text-xl font-semibold mt-1">{value}</div>
+    <div
+      className={`p-3 bg-[var(--bg)] ${
+        borderTop ? "border-t border-[var(--line)]" : ""
+      } odd:border-r md:[&:nth-child(4n)]:border-r-0 border-[var(--line)] md:border-r`}
+    >
+      <div className="label-caps">{label}</div>
+      <div className="mono text-xl font-semibold mt-1 tabular-nums">{value}</div>
     </div>
   );
 }

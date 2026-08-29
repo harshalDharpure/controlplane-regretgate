@@ -73,8 +73,8 @@ export default function ScenariosPage() {
 
   return (
     <div className="space-y-6">
-      <header className="pt-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
+      <header className="border-b border-[var(--line)] pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight">
           Multi-use-case simulator
         </h1>
         <p className="text-[var(--muted)] mt-2 max-w-2xl text-sm leading-relaxed">
@@ -84,24 +84,25 @@ export default function ScenariosPage() {
         </p>
       </header>
 
-      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
-        <div className="space-y-2">
-          {SCENARIOS.map((s) => (
+      <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+        <div className="space-y-0 border border-[var(--line)]">
+          {SCENARIOS.map((s, idx) => (
             <button
               key={s.id}
               onClick={() => run(s.id)}
-              className={`w-full text-left panel p-4 transition hover:border-[var(--brand)]/50 ${
-                activeId === s.id ? "ring-1 ring-[var(--brand)]" : ""
+              className={`w-full text-left px-4 py-3 transition ${
+                idx > 0 ? "border-t border-[var(--line)]" : ""
+              } ${
+                activeId === s.id
+                  ? "bg-[var(--bg-muted)]"
+                  : "bg-[var(--bg)] hover:bg-[var(--bg-muted)]"
               }`}
             >
-              <div className="text-[10px] uppercase tracking-wider text-[var(--brand)]">
-                {MODE_LABEL[s.failureMode]}
-              </div>
-              <div className="font-medium mt-1">{s.title}</div>
+              <div className="label-caps">{MODE_LABEL[s.failureMode]}</div>
+              <div className="font-medium mt-1 text-sm">{s.title}</div>
               <div className="text-xs text-[var(--muted)] mt-1">{s.blurb}</div>
               <div className="text-[11px] mono text-[var(--muted)] mt-2">
-                {s.action.useCase.replaceAll("_", " ")} · expect{" "}
-                {s.expectedHighlight}
+                {s.action.useCase.replaceAll("_", " ")}
               </div>
             </button>
           ))}
@@ -111,20 +112,18 @@ export default function ScenariosPage() {
           <div className="panel p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-xs uppercase tracking-widest text-[var(--muted)]">
-                  Active scenario
-                </div>
-                <div className="font-semibold text-lg">{active.title}</div>
+                <div className="label-caps">Active scenario</div>
+                <div className="font-semibold mt-0.5">{active.title}</div>
               </div>
               <button
                 onClick={() => run(active.id)}
                 disabled={loading}
-                className="rounded-lg bg-[var(--brand)] text-[#042f2e] font-semibold px-4 py-2 text-sm disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {loading ? "Running…" : "Run scenario"}
               </button>
             </div>
-            <pre className="mt-3 text-xs whitespace-pre-wrap bg-[var(--bg)]/60 border border-[var(--line)] rounded-lg p-3 text-[var(--muted)]">
+            <pre className="mt-3 text-xs whitespace-pre-wrap bg-[var(--bg-muted)] border border-[var(--line)] p-3 text-[var(--muted)] mono">
               {active.action.text}
             </pre>
           </div>
@@ -139,7 +138,7 @@ export default function ScenariosPage() {
           {decision ? (
             <DecisionPanel decision={decision} />
           ) : (
-            <div className="panel p-10 text-center text-[var(--muted)]">
+            <div className="panel-muted p-10 text-center text-[var(--muted)] text-sm">
               Select a scenario and run it through the gate.
             </div>
           )}
@@ -159,13 +158,11 @@ function CompareCard({
   if (!decision) return null;
   return (
     <div className="panel p-4">
-      <div className="text-xs text-[var(--muted)] uppercase tracking-wider">
-        {label}
-      </div>
-      <div className="mt-1 font-semibold capitalize">
+      <div className="label-caps">{label}</div>
+      <div className="mt-1 font-semibold capitalize text-sm">
         {decision.intervention.replaceAll("_", " ")}
       </div>
-      <div className="mono text-sm text-[var(--brand)] mt-1">
+      <div className="mono text-sm text-[var(--muted)] mt-1">
         regret {decision.regret.score}
       </div>
     </div>

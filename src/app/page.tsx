@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { DecisionPanel } from "@/components/DecisionPanel";
 import { LadderStrip } from "@/components/LadderStrip";
 import {
@@ -106,14 +106,14 @@ export default function ControlPlanePage() {
 
   return (
     <div className="space-y-8">
-      <section className="animate-rise pt-4 pb-2">
-        <p className="text-[var(--brand)] text-sm font-medium tracking-wide">
+      <section className="border-b border-[var(--line)] pb-6">
+        <p className="text-sm text-[var(--muted)]">
           Act with confidence. Verify only when the regret is high.
         </p>
-        <h1 className="mt-2 text-4xl sm:text-5xl font-semibold tracking-tight max-w-3xl">
+        <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--text)]">
           RegretGate
         </h1>
-        <p className="mt-3 text-[var(--muted)] max-w-2xl text-base leading-relaxed">
+        <p className="mt-3 text-[var(--muted)] max-w-2xl text-sm leading-relaxed">
           Pre-commit AI control plane. Scores every pending action by Expected
           Regret — P(failure) × Impact × Irreversibility — then routes through a
           regret-priced intervention ladder. Responsibility risks hard-block.
@@ -125,10 +125,10 @@ export default function ControlPlanePage() {
 
       <section className="grid lg:grid-cols-2 gap-6">
         <div className="panel p-5 space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-semibold">Pending AI action</h2>
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-3">
+            <h2 className="font-semibold text-sm">Pending AI action</h2>
             <select
-              className="bg-[var(--bg)] border border-[var(--line)] rounded-lg text-xs px-2 py-1.5"
+              className="field max-w-[200px]"
               defaultValue=""
               onChange={(e) => e.target.value && loadQuick(e.target.value)}
             >
@@ -147,7 +147,7 @@ export default function ControlPlanePage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={8}
-            className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl p-3 text-sm leading-relaxed focus:outline-none focus:border-[var(--brand)]"
+            className="field leading-relaxed resize-y min-h-[160px]"
             placeholder="Paste model output / pending action…"
           />
 
@@ -156,7 +156,7 @@ export default function ControlPlanePage() {
               <select
                 value={useCase}
                 onChange={(e) => setUseCase(e.target.value as UseCaseId)}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               >
                 {USE_CASE_OPTIONS.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -169,7 +169,7 @@ export default function ControlPlanePage() {
               <select
                 value={policyPack}
                 onChange={(e) => setPolicyPack(e.target.value as PolicyPackId)}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               >
                 {POLICY_OPTIONS.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -184,7 +184,7 @@ export default function ControlPlanePage() {
                 onChange={(e) =>
                   setActionType(e.target.value as ActionType | "auto")
                 }
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               >
                 <option value="auto">Auto-detect</option>
                 {ACTION_TYPES.map((a) => (
@@ -200,7 +200,7 @@ export default function ControlPlanePage() {
                 min={0}
                 value={amountUsd}
                 onChange={(e) => setAmountUsd(Number(e.target.value))}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               />
             </Field>
             <Field label="Tokens">
@@ -209,7 +209,7 @@ export default function ControlPlanePage() {
                 min={0}
                 value={tokens}
                 onChange={(e) => setTokens(Number(e.target.value))}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               />
             </Field>
             <Field label="Tool calls">
@@ -218,7 +218,7 @@ export default function ControlPlanePage() {
                 min={0}
                 value={toolCalls}
                 onChange={(e) => setToolCalls(Number(e.target.value))}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               />
             </Field>
             <Field label="Retries">
@@ -227,10 +227,10 @@ export default function ControlPlanePage() {
                 min={0}
                 value={retries}
                 onChange={(e) => setRetries(Number(e.target.value))}
-                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+                className="field"
               />
             </Field>
-            <Field label="Sources attached">
+            <Field label="Sources">
               <label className="flex items-center gap-2 text-sm h-[38px]">
                 <input
                   type="checkbox"
@@ -245,23 +245,25 @@ export default function ControlPlanePage() {
           <button
             onClick={evaluate}
             disabled={loading || !text.trim()}
-            className="w-full rounded-xl bg-[var(--brand)] text-[#042f2e] font-semibold py-3 hover:brightness-110 disabled:opacity-50 transition"
+            className="btn btn-primary w-full"
           >
             {loading ? "Evaluating…" : "Evaluate at gate"}
           </button>
-          {error && <p className="text-sm text-[var(--critical)]">{error}</p>}
+          {error && (
+            <p className="text-sm text-[var(--critical)]">{error}</p>
+          )}
         </div>
 
         <div>
           {decision ? (
             <DecisionPanel decision={decision} />
           ) : (
-            <div className="panel p-8 h-full min-h-[420px] flex items-center justify-center text-center text-[var(--muted)]">
+            <div className="panel-muted p-8 h-full min-h-[420px] flex items-center justify-center text-center">
               <div>
-                <p className="text-lg text-[var(--text)] font-medium">
+                <p className="text-base font-medium text-[var(--text)]">
                   Waiting for a pending action
                 </p>
-                <p className="mt-2 text-sm max-w-sm mx-auto">
+                <p className="mt-2 text-sm max-w-sm mx-auto text-[var(--muted)]">
                   Expected Regret = P(failure) × Impact × Irreversibility.
                   Lightweight triage first; deeper verification only when regret
                   is high.
@@ -280,11 +282,11 @@ function Field({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <label className="block text-xs text-[var(--muted)] space-y-1">
-      <span>{label}</span>
+    <label className="block space-y-1">
+      <span className="label-caps">{label}</span>
       {children}
     </label>
   );

@@ -3,12 +3,12 @@
 import type { LadderLevel } from "@/lib/regretgate/types";
 
 const COLORS: Record<LadderLevel | "default", string> = {
-  near_zero: "#34d399",
-  low: "#2dd4bf",
-  medium: "#f59e0b",
-  high: "#f97316",
-  critical: "#ef4444",
-  default: "#93a0b8",
+  near_zero: "#1b5e3b",
+  low: "#1a4d6d",
+  medium: "#8a5b00",
+  high: "#9a3412",
+  critical: "#9b1c1c",
+  default: "#5a636e",
 };
 
 export function RegretGauge({
@@ -19,42 +19,33 @@ export function RegretGauge({
   level?: LadderLevel;
 }) {
   const color = COLORS[level ?? "default"];
-  const r = 54;
-  const c = 2 * Math.PI * r;
-  const pct = Math.min(100, Math.max(0, score)) / 100;
-  const offset = c * (1 - pct);
+  const pct = Math.min(100, Math.max(0, score));
 
   return (
-    <div className="relative w-40 h-40 mx-auto">
-      <svg viewBox="0 0 140 140" className="w-full h-full -rotate-90">
-        <circle
-          cx="70"
-          cy="70"
-          r={r}
-          fill="none"
-          stroke="var(--line)"
-          strokeWidth="10"
+    <div className="w-full max-w-[200px]">
+      <div className="label-caps mb-2">Expected regret</div>
+      <div className="mono text-4xl font-semibold tabular-nums" style={{ color }}>
+        {score}
+        <span className="text-base font-normal text-[var(--muted)]">/100</span>
+      </div>
+      <div
+        className="mt-3 h-1.5 w-full bg-[var(--bg-inset)]"
+        role="meter"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Expected regret score"
+      >
+        <div
+          className="h-full transition-[width] duration-500 ease-out"
+          style={{ width: `${pct}%`, background: color }}
         />
-        <circle
-          cx="70"
-          cy="70"
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.6s ease, stroke 0.3s ease" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
-        <div className="mono text-3xl font-semibold" style={{ color }}>
-          {score}
-        </div>
-        <div className="text-[10px] uppercase tracking-widest text-[var(--muted)]">
-          Expected Regret
-        </div>
+      </div>
+      <div className="mt-1.5 flex justify-between text-[10px] mono text-[var(--muted)]">
+        <span>0</span>
+        <span>30</span>
+        <span>70</span>
+        <span>100</span>
       </div>
     </div>
   );
