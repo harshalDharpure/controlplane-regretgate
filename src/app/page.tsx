@@ -1,69 +1,291 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+import { DecisionPanel } from "@/components/DecisionPanel";
+import { LadderStrip } from "@/components/LadderStrip";
+import {
+  POLICY_OPTIONS,
+  SCENARIOS,
+  USE_CASE_OPTIONS,
+} from "@/data/scenarios";
+import type {
+  ActionType,
+  Decision,
+  PendingAction,
+  PolicyPackId,
+  UseCaseId,
+} from "@/lib/regretgate/types";
+
+const ACTION_TYPES: ActionType[] = [
+  "reply",
+  "send",
+  "approve",
+  "refund",
+  "execute",
+  "tool_loop",
+];
+
+export default function ControlPlanePage() {
+  const [text, setText] = useState(SCENARIOS[0].action.text);
+  const [useCase, setUseCase] = useState<UseCaseId>("customer_support");
+  const [policyPack, setPolicyPack] = useState<PolicyPackId>("us_internal");
+  const [actionType, setActionType] = useState<ActionType | "auto">("auto");
+  const [tokens, setTokens] = useState(200);
+  const [toolCalls, setToolCalls] = useState(0);
+  const [retries, setRetries] = useState(0);
+  const [amountUsd, setAmountUsd] = useState(0);
+  const [sourcesAttached, setSourcesAttached] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [decision, setDecision] = useState<Decision | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const payload: PendingAction = useMemo(
+    () => ({
+      text,
+      useCase,
+      policyPack,
+      actionType: actionType === "auto" ? undefined : actionType,
+      metadata: {
+        tokens,
+        toolCalls,
+        retries,
+        amountUsd: amountUsd || undefined,
+        sourcesAttached,
+        newInformationGain:
+          retries >= 3 || toolCalls >= 3 ? 0.1 : sourcesAttached ? 0.85 : 0.55,
+        claimedFacts: sourcesAttached ? 2 : 3,
+        groundedFacts: sourcesAttached ? 2 : 0,
+      },
+    }),
+    [
+      text,
+      useCase,
+      policyPack,
+      actionType,
+      tokens,
+      toolCalls,
+      retries,
+      amountUsd,
+      sourcesAttached,
+    ],
+  );
+
+  async function evaluate() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Evaluate failed");
+      setDecision(data.decision);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Evaluate failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function loadQuick(id: string) {
+    const s = SCENARIOS.find((x) => x.id === id);
+    if (!s) return;
+    setText(s.action.text);
+    setUseCase(s.action.useCase);
+    setPolicyPack(s.action.policyPack ?? "us_internal");
+    setActionType(s.action.actionType ?? "auto");
+    setTokens(s.action.metadata?.tokens ?? 200);
+    setToolCalls(s.action.metadata?.toolCalls ?? 0);
+    setRetries(s.action.metadata?.retries ?? 0);
+    setAmountUsd(s.action.metadata?.amountUsd ?? 0);
+    setSourcesAttached(Boolean(s.action.metadata?.sourcesAttached));
+    setDecision(null);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-8">
+      <section className="animate-rise pt-4 pb-2">
+        <p className="text-[var(--brand)] text-sm font-medium tracking-wide">
+          Act with confidence. Verify only when the regret is high.
+        </p>
+        <h1 className="mt-2 text-4xl sm:text-5xl font-semibold tracking-tight max-w-3xl">
+          RegretGate
+        </h1>
+        <p className="mt-3 text-[var(--muted)] max-w-2xl text-base leading-relaxed">
+          Pre-commit AI control plane. Scores every pending action by Expected
+          Regret — P(failure) × Impact × Irreversibility — then routes through a
+          regret-priced intervention ladder. Responsibility risks hard-block.
+        </p>
+        <div className="mt-5">
+          <LadderStrip />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </section>
+
+      <section className="grid lg:grid-cols-2 gap-6">
+        <div className="panel p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold">Pending AI action</h2>
+            <select
+              className="bg-[var(--bg)] border border-[var(--line)] rounded-lg text-xs px-2 py-1.5"
+              defaultValue=""
+              onChange={(e) => e.target.value && loadQuick(e.target.value)}
+            >
+              <option value="" disabled>
+                Load sample…
+              </option>
+              {SCENARIOS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={8}
+            className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl p-3 text-sm leading-relaxed focus:outline-none focus:border-[var(--brand)]"
+            placeholder="Paste model output / pending action…"
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Use case">
+              <select
+                value={useCase}
+                onChange={(e) => setUseCase(e.target.value as UseCaseId)}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              >
+                {USE_CASE_OPTIONS.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Policy pack">
+              <select
+                value={policyPack}
+                onChange={(e) => setPolicyPack(e.target.value as PolicyPackId)}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              >
+                {POLICY_OPTIONS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Action type">
+              <select
+                value={actionType}
+                onChange={(e) =>
+                  setActionType(e.target.value as ActionType | "auto")
+                }
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              >
+                <option value="auto">Auto-detect</option>
+                {ACTION_TYPES.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Amount USD">
+              <input
+                type="number"
+                min={0}
+                value={amountUsd}
+                onChange={(e) => setAmountUsd(Number(e.target.value))}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              />
+            </Field>
+            <Field label="Tokens">
+              <input
+                type="number"
+                min={0}
+                value={tokens}
+                onChange={(e) => setTokens(Number(e.target.value))}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              />
+            </Field>
+            <Field label="Tool calls">
+              <input
+                type="number"
+                min={0}
+                value={toolCalls}
+                onChange={(e) => setToolCalls(Number(e.target.value))}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              />
+            </Field>
+            <Field label="Retries">
+              <input
+                type="number"
+                min={0}
+                value={retries}
+                onChange={(e) => setRetries(Number(e.target.value))}
+                className="w-full bg-[var(--bg)] border border-[var(--line)] rounded-xl px-3 py-2 text-sm"
+              />
+            </Field>
+            <Field label="Sources attached">
+              <label className="flex items-center gap-2 text-sm h-[38px]">
+                <input
+                  type="checkbox"
+                  checked={sourcesAttached}
+                  onChange={(e) => setSourcesAttached(e.target.checked)}
+                />
+                Grounding available
+              </label>
+            </Field>
+          </div>
+
+          <button
+            onClick={evaluate}
+            disabled={loading || !text.trim()}
+            className="w-full rounded-xl bg-[var(--brand)] text-[#042f2e] font-semibold py-3 hover:brightness-110 disabled:opacity-50 transition"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {loading ? "Evaluating…" : "Evaluate at gate"}
+          </button>
+          {error && <p className="text-sm text-[var(--critical)]">{error}</p>}
         </div>
-      </main>
+
+        <div>
+          {decision ? (
+            <DecisionPanel decision={decision} />
+          ) : (
+            <div className="panel p-8 h-full min-h-[420px] flex items-center justify-center text-center text-[var(--muted)]">
+              <div>
+                <p className="text-lg text-[var(--text)] font-medium">
+                  Waiting for a pending action
+                </p>
+                <p className="mt-2 text-sm max-w-sm mx-auto">
+                  Expected Regret = P(failure) × Impact × Irreversibility.
+                  Lightweight triage first; deeper verification only when regret
+                  is high.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block text-xs text-[var(--muted)] space-y-1">
+      <span>{label}</span>
+      {children}
+    </label>
   );
 }
