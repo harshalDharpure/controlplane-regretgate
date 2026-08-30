@@ -1,4 +1,4 @@
-# RegretGate — ControlPlane Checker
+# RegretGate - ControlPlane Checker
 
 **Act with confidence. Verify only when the regret is high.**
 
