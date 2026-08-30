@@ -6,6 +6,26 @@ Public repo: [github.com/harshalDharpure/controlplane-regretgate](https://github
 
 ---
 
+## Round 2 submission uploads
+
+Ready-to-upload files are in [`submission/`](submission/):
+
+| Form field | File |
+|------------|------|
+| README document (PDF) | [`submission/RegretGate_README.pdf`](submission/RegretGate_README.pdf) |
+| Business Proposal (PDF) | [`submission/RegretGate_Business_Proposal.pdf`](submission/RegretGate_Business_Proposal.pdf) |
+| Business Proposal (PPTX) | [`submission/RegretGate_Business_Proposal.pptx`](submission/RegretGate_Business_Proposal.pptx) |
+| Public GitHub link | `https://github.com/harshalDharpure/controlplane-regretgate` |
+| Prototype video (mp4/mov) | **Record locally** using [`docs/DEMO_VIDEO_NOTES.md`](docs/DEMO_VIDEO_NOTES.md) |
+
+Regenerate docs anytime:
+
+```bash
+python scripts/generate_submission_docs.py
+```
+
+---
+
 ## What this project is about
 
 **RegretGate** is an action-aware AI **control plane** built for the Accenture Innovation Challenge Round 2 (**Problem Track 1: ControlPlane.ai**).
