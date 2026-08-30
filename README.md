@@ -85,10 +85,6 @@ If port 3000 is busy: `npx next dev -p 3001`
 4. Scenarios -> **Compounding: bad reply -> approve spend**. Hold, then resolve in Ops.
 5. Scenarios -> **Policy variant: EU automated refund**. Compare US vs EU packs.
 
-Video storyboard notes are in `docs/DEMO_VIDEO_NOTES.md`.
-
-Demo video: *add link after recording*
-
 ---
 
 ## Intervention ladder
@@ -114,8 +110,6 @@ Demo video: *add link after recording*
 | Business Proposal PDF  | `submission/RegretGate_Business_Proposal.pdf`                                                                            |
 | Business Proposal PPTX | `submission/RegretGate_Business_Proposal.pptx`                                                                           |
 | GitHub                 | [https://github.com/harshalDharpure/controlplane-regretgate](https://github.com/harshalDharpure/controlplane-regretgate) |
-| Prototype video        | record using `docs/DEMO_VIDEO_NOTES.md`                                                                                  |
-
 
 ---
 
@@ -128,7 +122,6 @@ This is a prototype, not a production control plane.
 - In-memory audit and HITL (resets on server restart)
 - No customer data, no model API keys required for the demo
 
-More detail if needed: `docs/ARCHITECTURE.md`, `docs/BUSINESS_PROPOSAL.md`
 
 ---
 
